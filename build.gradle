@@ -1,0 +1,44 @@
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'liquibase'
+
+buildscript {
+	repositories {
+		mavenCentral()
+		jcenter()
+	}
+	dependencies {
+		classpath 'org.liquibase:liquibase-core:3.5.3'
+		classpath "org.liquibase:liquibase-gradle-plugin:1.2.4"
+		classpath "postgresql:postgresql:9.1-901-1.jdbc4"
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compile group: 'postgresql', name: 'postgresql', version: '9.1-901-1.jdbc4'
+}
+
+def dbUrl = System.getenv('DB_URL')
+def dbUserName = System.getenv('DB_USER_NAME')
+def dbUserPass = System.getenv('DB_USER_PASSWORD')
+
+task('build-db') {
+	doLast {
+		println "create schema"
+		liquibase {
+			activities {
+				main {
+					changeLogFile "$projectDir/com/implicitly/db/master.xml"
+					url dbUrl
+					username dbUserName
+					password dbUserPass
+					update
+				}
+			}
+		}
+	}
+}
